@@ -1,0 +1,47 @@
+#include "ghost.h"
+
+Ghost::Ghost(int width, int height, Vector position, Vector direction, int speed) :
+    width(width), height(height), position(position), direction(direction), speed(speed)
+{
+    nextDirection = direction;
+}
+
+QRectF Ghost::boundingRect() const
+{
+    return QRectF(2, 2, width-4, height-4);
+}
+
+void Ghost::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    painter->setPen(Qt::black);
+    painter->setBrush(QBrush(Qt::blue));
+
+    painter->drawEllipse(QPointF(width/2, height/2), width/2-2, height/2-2);
+}
+
+void Ghost::advance(int step)
+{
+    if(!step) return;
+
+    // if ghost is going through wall, it teleports to the other side
+    if(x() < 0 && direction == Vector(-1, 0)) {
+        setPos(x() + (15*width), y());
+        position.x = 14;
+        return;
+    } else if(x() > (14*width) && direction == Vector(1, 0)) {
+        setPos(x() - (15*width), y());
+        position.x = 0;
+        return;
+    } else if(y() < 0 && direction == Vector(0, -1)) {
+        setPos(x(), y() + (15*height));
+        position.y= 14;
+        return;
+    } else if(y() > (14*height) && direction == Vector(0, 1)) {
+        setPos(x(), y() - (15*height));
+        position.y = 0;
+        return;
+    }
+
+    // else move normally
+    setPos(mapToParent(static_cast<int>(direction.x * speed), static_cast<int>(direction.y * speed)));
+}
